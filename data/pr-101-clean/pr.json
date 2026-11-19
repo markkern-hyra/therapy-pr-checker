@@ -1,0 +1,6 @@
+{
+  "number": 101,
+  "title": "Задача 1.1 impl-session-notes: нотатка терапевта до сеансу (AC-NOTE-01)",
+  "branch": "task/session-notes",
+  "body": "## Тип PR\n\n- [ ] **Оновлення вимог** — гілка `sync/<дата>`\n- [ ] **Специфікація** — гілка `spec/<id зміни>`\n- [x] **Реалізація** — гілка `task/session-notes`: `src/`, `supabase/`, `tests/`, рядок `docs/conformance.md`, галочка 1.1 в `openspec/changes/impl-session-notes/tasks.md`.\n- [ ] **Оновлення шаблону** — гілка `template/<коротко>`\n\n## Вимоги\n\nВимоги: https://github.com/example-pm/demo-clinic-spec · джерело: issues · знімок 2026-11-20\n\n## AC, які покриває PR\n\n- AC-NOTE-01: реалізовано\n\n## Що змінилось\n\n- Міграція `session_notes`: RLS, revoke, явні grant, політики `to authenticated` з `(select auth.uid())`.\n- Server action `saveSessionNote`: `requireRole()` (getClaims) до запису.\n- Тест `AC-NOTE-01` і рядок матриці.\n"
+}

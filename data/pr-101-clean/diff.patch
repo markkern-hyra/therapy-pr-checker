@@ -1,0 +1,76 @@
+diff --git a/docs/conformance.md b/docs/conformance.md
+index 1a2b3c4..5d6e7f8 100644
+--- a/docs/conformance.md
++++ b/docs/conformance.md
+@@ -40,3 +40,3 @@
+ | AC | Що | Код | Тест | Статус |
+-| AC-NOTE-01 | терапевт зберігає нотатку до сеансу — «Note saved.» | — | — | відкладено (чекає реалізації) |
++| AC-NOTE-01 | терапевт зберігає нотатку до сеансу — «Note saved.» | `src/app/sessions/[id]/note-actions.ts`, `supabase/migrations/20261120090000_session_notes.sql` | `tests/scheduling/session-note.test.ts` | реалізовано |
+ | AC-NOTE-02 | інший терапевт нотатки не бачить | — | — | відкладено (чекає реалізації) |
+diff --git a/openspec/changes/impl-session-notes/tasks.md b/openspec/changes/impl-session-notes/tasks.md
+index 2b3c4d5..6e7f8a9 100644
+--- a/openspec/changes/impl-session-notes/tasks.md
++++ b/openspec/changes/impl-session-notes/tasks.md
+@@ -5,3 +5,3 @@
+ ## 1. Нотатка до сеансу
+-- [ ] 1.1 Міграція session_notes, дія saveSessionNote, тест AC-NOTE-01.
++- [x] 1.1 Міграція session_notes, дія saveSessionNote, тест AC-NOTE-01.
+   Done when: AC-NOTE-01.
+diff --git a/src/app/sessions/[id]/note-actions.ts b/src/app/sessions/[id]/note-actions.ts
+new file mode 100644
+index 0000000..3c4d5e6
+--- /dev/null
++++ b/src/app/sessions/[id]/note-actions.ts
+@@ -0,0 +1,12 @@
++"use server";
++import { requireRole } from "@/lib/auth/require-role";
++import { MESSAGES } from "@/lib/scheduling/messages";
++
++// Нотатку пише лише терапевт сеансу: роль — з profiles (getClaims у requireRole), запис — під сесією користувача (RLS).
++export async function saveSessionNote(sessionId: string, text: string) {
++  const { supabase, role } = await requireRole();
++  if (role !== "therapist") return { message: MESSAGES.NOTE_FORBIDDEN };
++  const { error } = await supabase.from("session_notes").insert({ session_id: sessionId, text: text.slice(0, 2000) });
++  if (error) return { message: MESSAGES.NOTE_FAILED };
++  return { message: MESSAGES.NOTE_SAVED };
++}
+diff --git a/supabase/migrations/20261120090000_session_notes.sql b/supabase/migrations/20261120090000_session_notes.sql
+new file mode 100644
+index 0000000..4d5e6f7
+--- /dev/null
++++ b/supabase/migrations/20261120090000_session_notes.sql
+@@ -0,0 +1,17 @@
++-- Нотатка терапевта до сеансу (AC-NOTE-01). Синтетичні дані — лише *@example.test.
++create table public.session_notes (
++  id uuid primary key default gen_random_uuid(),
++  session_id uuid not null,
++  author_id uuid not null default auth.uid() references auth.users (id),
++  text text not null check (char_length(text) <= 2000),
++  created_at timestamptz not null default now()
++);
++
++alter table public.session_notes enable row level security;
++revoke all on public.session_notes from anon, authenticated;
++grant select, insert on public.session_notes to authenticated;
++
++create policy "session_notes: свої нотатки — читання" on public.session_notes
++  for select to authenticated using (author_id = (select auth.uid()));
++create policy "session_notes: свої нотатки — запис" on public.session_notes
++  for insert to authenticated with check (author_id = (select auth.uid()));
+diff --git a/tests/scheduling/session-note.test.ts b/tests/scheduling/session-note.test.ts
+new file mode 100644
+index 0000000..5e6f7a8
+--- /dev/null
++++ b/tests/scheduling/session-note.test.ts
+@@ -0,0 +1,11 @@
++import { describe, expect, it } from "vitest";
++import { saveSessionNote } from "@/app/sessions/[id]/note-actions";
++import { asUser } from "../support/as-user";
++
++describe("нотатка до сеансу", () => {
++  it("AC-NOTE-01: therapist1 зберігає нотатку — «Note saved.»", async () => {
++    await asUser("therapist1@example.test");
++    const result = await saveSessionNote("00000000-0000-4000-8000-000000000001", "Synthetic note.");
++    expect(result.message).toBe("Note saved.");
++  });
++});

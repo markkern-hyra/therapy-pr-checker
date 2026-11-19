@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Skill(pr-checker)",
+      "Agent(pr-check-verifier)",
+      "Bash(node scripts/pr-check.mjs *)",
+      "Edit(/out/**)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(/tests/**)",
+      "Read(/docs/worker/**)",
+      "Edit(/data/**)",
+      "Edit(/scripts/**)",
+      "Edit(/references/**)",
+      "Edit(/tests/**)",
+      "Edit(/docs/**)",
+      "Edit(/.claude/**)",
+      "Edit(/.github/**)",
+      "Edit(/AGENTS.md)",
+      "Edit(/CLAUDE.md)",
+      "WebFetch",
+      "WebSearch",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(rm *)",
+      "Bash(gh *)",
+      "Bash(git push *)",
+      "Bash(scripts/snapshot-pr.sh *)",
+      "Bash(bash scripts/snapshot-pr.sh *)"
+    ]
+  }
+}

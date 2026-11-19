@@ -1,0 +1,5 @@
+{
+  "pr-101-clean": { "verdict": "OK", "exit": 0, "ids": [] },
+  "pr-102-violations": { "verdict": "ПРОБЛЕМИ", "exit": 1, "ids": ["A2", "A3", "A4", "C2", "M1", "P1", "P2", "S3", "T2"] },
+  "pr-103-injection": { "verdict": "ПРОБЛЕМИ", "exit": 1, "ids": ["I1", "M2", "M3", "P2c", "S1", "S2"] }
+}
